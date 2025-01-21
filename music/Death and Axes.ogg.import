@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://2h0yg5j1eotx"
+path="res://.godot/imported/Death and Axes.ogg-1f3ff6353b41b4e10f8ca38ab21e2fa8.oggvorbisstr"
+
+[deps]
+
+source_file="res://music/Death and Axes.ogg"
+dest_files=["res://.godot/imported/Death and Axes.ogg-1f3ff6353b41b4e10f8ca38ab21e2fa8.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4
