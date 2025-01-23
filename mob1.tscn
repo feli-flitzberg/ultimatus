@@ -1,0 +1,72 @@
+[gd_scene load_steps=7 format=3 uid="uid://b088rguc2vlne"]
+
+[ext_resource type="Texture2D" uid="uid://bvs4510iqyn7p" path="res://art/clipped-sprite1.png" id="1_afswk"]
+[ext_resource type="Texture2D" uid="uid://b3qwnxrajikc4" path="res://art/clipped-sprite2.png" id="2_gof54"]
+[ext_resource type="Texture2D" uid="uid://dln6sxj55owoh" path="res://art/clipped-sprite3.png" id="3_t2irb"]
+
+[sub_resource type="GDScript" id="GDScript_o2ch4"]
+script/source = "class_name Mob1 extends CharacterBody2D
+
+@export var speed = 200
+@export var attack = 256
+@export var health = 256
+var max_health
+
+var playerpos: Vector2
+
+func move_to_player(ppos):
+	playerpos = ppos
+
+func damage(dam, move):
+	health -= dam
+	speed -= move
+	if health <= 0:
+		self.queue_free()
+		GSignals.heal.emit(max_health)
+		GSignals.addscore.emit(1)
+
+func end():
+	self.queue_free()
+
+func _ready() -> void:
+	GSignals.pos.connect(move_to_player)
+	GSignals.wipe.connect(damage)
+	GSignals.dead.connect(end)
+
+func _physics_process(_delta: float) -> void:
+	var direction := global_transform.origin.direction_to(playerpos)
+	velocity = direction * speed
+	move_and_slide()
+"
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_7il4i"]
+size = Vector2(14, 12)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_wkfx1"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("1_afswk")
+}, {
+"duration": 1.0,
+"texture": ExtResource("2_gof54")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_t2irb")
+}],
+"loop": true,
+"name": &"default",
+"speed": 10.0
+}]
+
+[node name="CharacterBody2D" type="CharacterBody2D"]
+rotation = -6.28319
+motion_mode = 1
+script = SubResource("GDScript_o2ch4")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_7il4i")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+sprite_frames = SubResource("SpriteFrames_wkfx1")
+frame_progress = 0.0812598

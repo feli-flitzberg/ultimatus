@@ -1,0 +1,111 @@
+[gd_scene load_steps=3 format=3 uid="uid://b1scbm35iefk7"]
+
+[sub_resource type="GDScript" id="GDScript_ru2lh"]
+script/source = "extends Control
+
+# Called when the node enters the scene tree for the first time.
+func _ready() -> void:
+	GSignals.started.connect(hideui)
+	GSignals.endrun.connect(restart)
+	$bg/box/hiscore.text = \"High Score to Beat: %d\" % GSignals.conf.get_value(\"Scores\", \"hiscore\", 0)
+
+func _on_start_pressed() -> void:
+	GSignals.startrun.emit()
+
+func hideui():
+	self.visible = false
+
+func restart(score, time):
+	$bg/box/story.visible = false
+	$bg/box/hiscore.text = \"High Score to Beat: %d\" % GSignals.conf.get_value(\"Scores\", \"hiscore\", 0)
+	$bg/box/finalscore.text = \"Final Score: %d\" % score
+	var minute = time / 60
+	var second = fmod(time, 60)
+	$bg/box/finaltime.text = \"Time: %02d:%02d\" % [minute, second]
+	$bg/box/finalscore.visible = true
+	$bg/box/finaltime.visible = true
+	self.visible = true
+"
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_t4xke"]
+
+[node name="mainui" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 576.0
+offset_top = 324.0
+offset_right = 576.0
+offset_bottom = 324.0
+grow_horizontal = 2
+grow_vertical = 2
+script = SubResource("GDScript_ru2lh")
+
+[node name="bg" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_t4xke")
+
+[node name="box" type="VBoxContainer" parent="bg"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+
+[node name="title" type="Label" parent="bg/box"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 48
+text = "ULTIMATUS"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="story" type="Label" parent="bg/box"]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+text = "BEHOLD! You are an ULTIMATE WEAPON, designed to be wielded against THE BOSS. However, your fated wielder hasn't shown up yet. Since you're (semi-)sentient, SLAY THE HORDES until your wielder finally comes along!"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="finalscore" type="Label" parent="bg/box"]
+visible = false
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "Final Score: "
+horizontal_alignment = 1
+
+[node name="finaltime" type="Label" parent="bg/box"]
+visible = false
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "Time: "
+horizontal_alignment = 1
+
+[node name="hiscore" type="Label" parent="bg/box"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "High Score to Beat: 0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="start" type="Button" parent="bg/box"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 56
+text = "Start New Slaying"
+
+[node name="settings" type="Button" parent="bg/box"]
+visible = false
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "Settings"
+
+[node name="stats" type="Button" parent="bg/box"]
+visible = false
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "Stats"
+
+[connection signal="pressed" from="bg/box/start" to="." method="_on_start_pressed"]

@@ -19,6 +19,10 @@ run/main_scene="res://map.tscn"
 config/features=PackedStringArray("4.3", "GL Compatibility")
 config/icon="res://art/x-sword.png"
 
+[autoload]
+
+GSignals="*res://scripts/signals.gd"
+
 [display]
 
 window/stretch/scale_mode="integer"
