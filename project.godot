@@ -25,6 +25,7 @@ GSignals="*res://scripts/signals.gd"
 
 [display]
 
+window/stretch/mode="viewport"
 window/stretch/scale_mode="integer"
 mouse_cursor/custom_image="res://art/tile_0087.png"
 
