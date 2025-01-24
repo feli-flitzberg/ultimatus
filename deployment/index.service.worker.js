@@ -4,7 +4,7 @@
 // Incrementing CACHE_VERSION will kick off the install event and force
 // previously cached resources to be updated from the network.
 /** @type {string} */
-const CACHE_VERSION = '1737614029|67955670580';
+const CACHE_VERSION = '1737689333|9668654164';
 /** @type {string} */
 const CACHE_PREFIX = 'ULTIMATUS-sw-cache-';
 const CACHE_NAME = CACHE_PREFIX + CACHE_VERSION;

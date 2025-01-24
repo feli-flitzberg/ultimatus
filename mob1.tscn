@@ -21,9 +21,9 @@ func damage(dam, move):
 	health -= dam
 	speed -= move
 	if health <= 0:
-		self.queue_free()
 		GSignals.heal.emit(max_health)
 		GSignals.addscore.emit(1)
+		self.queue_free()
 
 func end():
 	self.queue_free()
@@ -34,6 +34,8 @@ func _ready() -> void:
 	GSignals.dead.connect(end)
 
 func _physics_process(_delta: float) -> void:
+	if speed < 200:
+		speed += 1
 	var direction := global_transform.origin.direction_to(playerpos)
 	velocity = direction * speed
 	move_and_slide()
@@ -56,7 +58,7 @@ animations = [{
 }],
 "loop": true,
 "name": &"default",
-"speed": 10.0
+"speed": 12.0
 }]
 
 [node name="CharacterBody2D" type="CharacterBody2D"]
@@ -69,4 +71,5 @@ shape = SubResource("RectangleShape2D_7il4i")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
 sprite_frames = SubResource("SpriteFrames_wkfx1")
-frame_progress = 0.0812598
+autoplay = "default"
+frame_progress = 0.281642
