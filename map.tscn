@@ -175,10 +175,10 @@ func get_input():
 	var input_direction = Input.get_vector(\"left\", \"right\", \"up\", \"down\")
 	velocity = input_direction * speed
 
-func flash():
-	$attack.visible = true
-	await get_tree().create_timer(0.1).timeout
-	$attack.visible = false
+func emit():
+	$attack.emitting = true
+	await get_tree().create_timer(1).timeout
+	$attack.emitting = false
 
 func _physics_process(_delta: float) -> void:
 	if $mainui.visible != true:
@@ -195,11 +195,11 @@ func _physics_process(_delta: float) -> void:
 
 func _on_wipe_timeout() -> void:
 	var targets = get_all_children($\"../mobs\")
-	flash()
 	for i in targets:
 		if i == $\"../mobs\":
 			pass
 		else:
+			emit()
 			GSignals.wipe.emit(attack, slow)
 
 func get_all_children(in_node,arr:=[]):
@@ -321,13 +321,20 @@ texture = ExtResource("1_gs8ea")
 offset_left = -576.0
 offset_top = -324.0
 
-[node name="attack" type="ColorRect" parent="weapon"]
-visible = false
-offset_left = -576.0
-offset_top = -324.0
-offset_right = 576.0
-offset_bottom = 324.0
-color = Color(1, 1, 0.105882, 1)
+[node name="attack" type="CPUParticles2D" parent="weapon"]
+emitting = false
+amount = 128
+randomness = 1.0
+lifetime_randomness = 1.0
+local_coords = true
+draw_order = 1
+direction = Vector2(1, 1)
+spread = 180.0
+gravity = Vector2(0, 0)
+initial_velocity_max = 200.0
+scale_amount_min = 3.0
+scale_amount_max = 3.0
+color = Color(0.956863, 0.898039, 0.0431373, 1)
 
 [node name="mobs" type="CanvasGroup" parent="."]
 

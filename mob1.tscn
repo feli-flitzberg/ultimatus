@@ -21,6 +21,9 @@ func damage(dam, move):
 	health -= dam
 	speed -= move
 	if health <= 0:
+		var tween = create_tween()
+		tween.tween_property(self, \"modulate\", Color(0, 0, 0 ,0), 1)
+		await get_tree().create_timer(1).timeout
 		GSignals.heal.emit(max_health)
 		GSignals.addscore.emit(1)
 		self.queue_free()
@@ -72,4 +75,4 @@ shape = SubResource("RectangleShape2D_7il4i")
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
 sprite_frames = SubResource("SpriteFrames_wkfx1")
 autoplay = "default"
-frame_progress = 0.281642
+frame_progress = 0.727559

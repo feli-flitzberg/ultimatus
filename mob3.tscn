@@ -21,9 +21,12 @@ func damage(dam, move):
 	health -= dam
 	speed -= move
 	if health <= 0:
-		self.queue_free()
+		var tween = create_tween()
+		tween.tween_property(self, \"modulate\", Color(0, 0, 0 ,0), 1)
+		await get_tree().create_timer(1).timeout
 		GSignals.heal.emit(max_health)
 		GSignals.addscore.emit(3)
+		self.queue_free()
 
 func end():
 	self.queue_free()
