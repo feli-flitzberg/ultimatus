@@ -1,10 +1,12 @@
-[gd_scene load_steps=3 format=3 uid="uid://b1scbm35iefk7"]
+[gd_scene load_steps=5 format=3 uid="uid://b1scbm35iefk7"]
 
 [sub_resource type="GDScript" id="GDScript_ru2lh"]
 script/source = "extends Control
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
+	$creditswindow.hide()
+	$licensewindow.hide()
 	GSignals.started.connect(hideui)
 	GSignals.endrun.connect(restart)
 	$bg/box/hiscore.text = \"High Score to Beat: %d\" % GSignals.conf.get_value(\"Scores\", \"hiscore\", 0)
@@ -25,9 +27,93 @@ func restart(score, time):
 	$bg/box/finalscore.visible = true
 	$bg/box/finaltime.visible = true
 	self.visible = true
+
+func _on_settings_pressed() -> void:
+	$swin/holder/soundtoggle.button_pressed = GSignals.conf.get_value(\"Settings\", \"senable\", true)
+	$swin/holder/musictoggle.button_pressed = GSignals.conf.get_value(\"Settings\", \"menable\", true)
+	$swin/holder/scon/soundvol.value = GSignals.conf.get_value(\"Settings\", \"svol\", 1)
+	$swin/holder/mcon/musicvol.value = GSignals.conf.get_value(\"Settings\", \"mvol\", 1)
+	$swin/holder/thormode.button_pressed = GSignals.conf.get_value(\"Settings\", \"tmode\", false)
+	$swin.visible = true
+
+func _on_close_pressed() -> void:
+	var senablepass = $swin/holder/soundtoggle.button_pressed
+	var menablepass = $swin/holder/musictoggle.button_pressed
+	var svolpass = $swin/holder/scon/soundvol.value
+	var mvolpass = $swin/holder/mcon/musicvol.value
+	var tmodepass = $swin/holder/thormode.button_pressed
+	GSignals.configsave(senablepass, menablepass, svolpass, mvolpass, tmodepass)
+	$swin.visible = false
+
+func _on_soundtoggle_toggled(_toggled_on: bool) -> void:
+	if $swin/holder/soundtoggle.button_pressed == false:
+		AudioServer.set_bus_mute(AudioServer.get_bus_index(\"effects\"), true)
+	elif $swin/holder/soundtoggle.button_pressed == true:
+		AudioServer.set_bus_mute(AudioServer.get_bus_index(\"effects\"), false)
+
+func _on_musictoggle_toggled(_toggled_on: bool) -> void:
+	if $swin/holder/musictoggle.button_pressed == false:
+		AudioServer.set_bus_mute(AudioServer.get_bus_index(\"music\"), true)
+	elif $swin/holder/musictoggle.button_pressed == true:
+		AudioServer.set_bus_mute(AudioServer.get_bus_index(\"music\"), false)
+
+func _on_soundvol_value_changed(value: float) -> void:
+	if value == 1:
+		AudioServer.set_bus_volume_db(AudioServer.get_bus_index(\"effects\"), 0)
+	else:
+		var calc = -60 * value
+		var newvol = -60 - calc
+		AudioServer.set_bus_volume_db(AudioServer.get_bus_index(\"effects\"), newvol)
+
+func _on_musicvol_value_changed(value: float) -> void:
+	if value == 1:
+		AudioServer.set_bus_volume_db(AudioServer.get_bus_index(\"music\"), 0)
+	else:
+		var calc = -60 * value
+		var newvol = -60 - calc
+		AudioServer.set_bus_volume_db(AudioServer.get_bus_index(\"music\"), newvol)
+
+func _on_credits_pressed() -> void:
+	$creditswindow.show()
+
+func _on_creditswindow_close_requested() -> void:
+	$creditswindow.hide()
+
+func _on_licenses_pressed() -> void:
+	$licensewindow.show()
+
+func _on_licensewindow_close_requested() -> void:
+	$licensewindow.hide()
+
+func _on_stats_pressed() -> void:
+	$statswin/holder/hiscoreshow/hiscore.text = \"High Score: %d\" % GSignals.conf.get_value(\"Scores\", \"hiscore\", 0)
+	var htime = GSignals.conf.get_value(\"Scores\", \"hiscoretime\", 0)
+	var hminute = htime / 60
+	var hsecond = fmod(htime, 60)
+	$statswin/holder/hiscoreshow/hiscoretime.text = \"High Score Time: %02d:%02d\" % [hminute, hsecond]
+	var ltime = GSignals.conf.get_value(\"Scores\", \"hitime\", 0)
+	var lminute = ltime / 60
+	var lsecond = fmod(ltime, 60)
+	$statswin/holder/hitimeshow/hitime.text = \"Longest Run Time: %02d:%02d\" % [lminute, lsecond]
+	$statswin/holder/hitimeshow/hitimescore.text = \"Longest Run Score: %d\" % GSignals.conf.get_value(\"Scores\", \"hitimescore\", 0)
+	$statswin/holder/curscoreshow/curscore.text = \"Last Run Score: %d\" % GSignals.conf.get_value(\"Scores\", \"curscore\", 0)
+	var ctime = GSignals.conf.get_value(\"Scores\", \"curscoretime\", 0)
+	var cminute = ctime / 60
+	var csecond = fmod(ctime, 60)
+	$statswin/holder/curscoreshow/curscoretime.text = \"Last Run Time: %02d:%02d\" % [cminute, csecond]
+	$statswin.visible = true
+
+func _on_statclose_pressed() -> void:
+	$statswin.visible = false
 "
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_t4xke"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_2nk8b"]
+bg_color = Color(0.196078, 0.196078, 0.196078, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_rxnv8"]
+bg_color = Color(0.196078, 0.196078, 0.196078, 1)
 
 [node name="mainui" type="Control"]
 layout_mode = 3
@@ -96,16 +182,326 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 56
 text = "Start New Slaying"
 
-[node name="settings" type="Button" parent="bg/box"]
-visible = false
+[node name="other" type="HBoxContainer" parent="bg/box"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+alignment = 1
+
+[node name="settings" type="Button" parent="bg/box/other"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 32
 text = "Settings"
 
-[node name="stats" type="Button" parent="bg/box"]
-visible = false
+[node name="stats" type="Button" parent="bg/box/other"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 32
 text = "Stats"
 
+[node name="swin" type="PanelContainer" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -361.0
+offset_top = -162.0
+offset_right = 361.0
+offset_bottom = 162.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_2nk8b")
+
+[node name="holder" type="VBoxContainer" parent="swin"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+alignment = 1
+
+[node name="title" type="Label" parent="swin/holder"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "settings"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="soundtoggle" type="CheckButton" parent="swin/holder"]
+layout_mode = 2
+button_pressed = true
+text = "enable sound effects"
+alignment = 2
+
+[node name="musictoggle" type="CheckButton" parent="swin/holder"]
+layout_mode = 2
+button_pressed = true
+text = "enable music"
+alignment = 2
+
+[node name="scon" type="HBoxContainer" parent="swin/holder"]
+layout_mode = 2
+
+[node name="title" type="Label" parent="swin/holder/scon"]
+layout_mode = 2
+text = "sound volume"
+
+[node name="soundvol" type="HSlider" parent="swin/holder/scon"]
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 1.0
+step = 0.01
+value = 1.0
+
+[node name="mcon" type="HBoxContainer" parent="swin/holder"]
+layout_mode = 2
+
+[node name="title" type="Label" parent="swin/holder/mcon"]
+layout_mode = 2
+text = "music volume"
+
+[node name="musicvol" type="HSlider" parent="swin/holder/mcon"]
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 1.0
+step = 0.01
+value = 1.0
+
+[node name="extras" type="HBoxContainer" parent="swin/holder"]
+layout_mode = 2
+alignment = 1
+
+[node name="credits" type="Button" parent="swin/holder/extras"]
+layout_mode = 2
+text = "credits"
+
+[node name="licenses" type="Button" parent="swin/holder/extras"]
+layout_mode = 2
+text = "licenses"
+
+[node name="jam" type="Button" parent="swin/holder/extras"]
+layout_mode = 2
+text = "PSJam16"
+
+[node name="close" type="Button" parent="swin/holder"]
+layout_mode = 2
+text = "save settings & close"
+
+[node name="thormode" type="CheckButton" parent="swin/holder"]
+layout_mode = 2
+text = "thor mode"
+alignment = 2
+
+[node name="statswin" type="PanelContainer" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -361.0
+offset_top = -162.0
+offset_right = 361.0
+offset_bottom = 162.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_rxnv8")
+
+[node name="holder" type="VBoxContainer" parent="statswin"]
+layout_mode = 2
+alignment = 1
+
+[node name="title" type="Label" parent="statswin/holder"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "Stats & Scores"
+horizontal_alignment = 1
+
+[node name="hiscoreshow" type="HBoxContainer" parent="statswin/holder"]
+layout_mode = 2
+theme_override_constants/separation = 24
+alignment = 1
+
+[node name="hiscore" type="Label" parent="statswin/holder/hiscoreshow"]
+layout_mode = 2
+text = "High Score: "
+
+[node name="hiscoretime" type="Label" parent="statswin/holder/hiscoreshow"]
+layout_mode = 2
+text = "Hi Score Time: "
+
+[node name="hitimeshow" type="HBoxContainer" parent="statswin/holder"]
+layout_mode = 2
+theme_override_constants/separation = 24
+alignment = 1
+
+[node name="hitime" type="Label" parent="statswin/holder/hitimeshow"]
+layout_mode = 2
+text = "Longest Run Time:"
+
+[node name="hitimescore" type="Label" parent="statswin/holder/hitimeshow"]
+layout_mode = 2
+text = "Longest Run Score:"
+
+[node name="curscoreshow" type="HBoxContainer" parent="statswin/holder"]
+layout_mode = 2
+theme_override_constants/separation = 24
+alignment = 1
+
+[node name="curscore" type="Label" parent="statswin/holder/curscoreshow"]
+layout_mode = 2
+text = "Last Run Score:"
+
+[node name="curscoretime" type="Label" parent="statswin/holder/curscoreshow"]
+layout_mode = 2
+text = "Last Run Time:"
+
+[node name="statclose" type="Button" parent="statswin/holder"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "close"
+
+[node name="creditswindow" type="Window" parent="."]
+title = "Credits"
+initial_position = 4
+size = Vector2i(576, 324)
+
+[node name="ScrollContainer" type="ScrollContainer" parent="creditswindow"]
+clip_contents = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="creditswindow/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 24
+
+[node name="creditstext" type="Label" parent="creditswindow/ScrollContainer/VBoxContainer"]
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+text = "GDD Checking/Proofreading:
+- Aviatriss https://github.com/aviatriss
+- Framebuffer https://github.com/Framebuffers
+- @monarch_zero on Discord
+- @theguywithawhy on Discord
+
+GDD Editing Help: Aviatriss
+
+Testing/Breaking:
+- Aviatriss
+- BermudaStar
+- @revsilverspine on Discord
+- Pirate Software Discord members
+- itch.io players
+- hi dad, I made a thing
+
+Everything not specifically listed above: Feli Flitzberg https://github.com/feli-flitzberg/"
+autowrap_mode = 3
+
+[node name="toolstext" type="Label" parent="creditswindow/ScrollContainer/VBoxContainer"]
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+text = "Tools Used:
+
+Engine: Godot
+
+Pixel Art: LibreSprite
+
+In-House Sound: Rosegarden
+
+GDD Editing: Proton Docs/Proton Drive
+
+GDD Publishing: MikTeX environment, Google Drive
+
+Version Control: Git/Github"
+autowrap_mode = 3
+
+[node name="sourcestext" type="Label" parent="creditswindow/ScrollContainer/VBoxContainer"]
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+text = "Music: Kevin MacLeod https://incompetech.com/
+- \"Burnt Spirit\"
+- \"Darkling\"
+- \"Death and Axes\"
+- \"Unity\"
+- \"Mistake the Getaway\"
+- \"Truth of the Legend\"
+
+Premade Assets: OpenGameArt https://opengameart.org/
+- Anêmonanônima - blobs.png
+- SCaydi - x-sword.png
+
+More Premade Assets: Kenney.nl https://kenney.nl
+- Tiny Town - grass and trees
+- UI Pack: Pixel Adventure - bars
+- Cursor Pixel Pack - custom cursor
+- Input Prompts Pixel 16x - tutorial image
+- Kenney Fonts - custom font
+
+Premade Shaders: Godot Shaders https://godotshaders.com
+- Ring of Power - CasualGarageCoder"
+autowrap_mode = 3
+
+[node name="licensewindow" type="Window" parent="."]
+title = "Licenses"
+initial_position = 4
+size = Vector2i(576, 324)
+
+[node name="ScrollContainer" type="ScrollContainer" parent="licensewindow"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="licensewindow/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 24
+
+[node name="licensetext" type="RichTextLabel" parent="licensewindow/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+text = "Godot: https://godotengine.org/license/
+
+LibreSprite: https://github.com/LibreSprite/LibreSprite/blob/master/LICENSE.txt
+
+Rosegarden: https://github.com/tedfelix/rosegarden-official/blob/master/COPYING
+
+Proton: https://proton.me/legal/terms
+
+MikTeX: https://miktex.org/copying
+
+Kevin MacLeod: https://incompetech.com/music/royalty-free/licenses/ under the Creative Commons option
+
+Git: https://git-scm.com/about/free-and-open-source
+
+Github: https://docs.github.com/en/site-policy/github-terms/github-terms-of-service
+
+OpenGameArt: https://opengameart.org/content/faq#q-proprietary
+- Anêmonanônima: https://creativecommons.org/publicdomain/zero/1.0/
+- SCaydi: https://www.gnu.org/licenses/old-licenses/gpl-2.0.html, https://www.gnu.org/licenses/gpl-3.0.html
+
+Kenney.nl: https://kenney.nl/support, https://creativecommons.org/publicdomain/zero/1.0/
+
+Godot Shaders: https://godotshaders.com/license/, https://creativecommons.org/publicdomain/zero/1.0/"
+fit_content = true
+
 [connection signal="pressed" from="bg/box/start" to="." method="_on_start_pressed"]
+[connection signal="pressed" from="bg/box/other/settings" to="." method="_on_settings_pressed"]
+[connection signal="pressed" from="bg/box/other/stats" to="." method="_on_stats_pressed"]
+[connection signal="toggled" from="swin/holder/soundtoggle" to="." method="_on_soundtoggle_toggled"]
+[connection signal="toggled" from="swin/holder/musictoggle" to="." method="_on_musictoggle_toggled"]
+[connection signal="value_changed" from="swin/holder/scon/soundvol" to="." method="_on_soundvol_value_changed"]
+[connection signal="value_changed" from="swin/holder/mcon/musicvol" to="." method="_on_musicvol_value_changed"]
+[connection signal="pressed" from="swin/holder/extras/credits" to="." method="_on_credits_pressed"]
+[connection signal="pressed" from="swin/holder/extras/licenses" to="." method="_on_licenses_pressed"]
+[connection signal="pressed" from="swin/holder/close" to="." method="_on_close_pressed"]
+[connection signal="pressed" from="statswin/holder/statclose" to="." method="_on_statclose_pressed"]
+[connection signal="close_requested" from="creditswindow" to="." method="_on_creditswindow_close_requested"]
+[connection signal="close_requested" from="licensewindow" to="." method="_on_licensewindow_close_requested"]

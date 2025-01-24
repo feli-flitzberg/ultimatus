@@ -1,4 +1,4 @@
-[gd_scene load_steps=23 format=4 uid="uid://bkh4rmi7t6veg"]
+[gd_scene load_steps=24 format=4 uid="uid://bkh4rmi7t6veg"]
 
 [ext_resource type="Shader" path="res://art/attack.gdshader" id="1_8w5r1"]
 [ext_resource type="AudioStream" uid="uid://cbsu8b6rd711w" path="res://music/Burnt Spirit.ogg" id="1_f1puq"]
@@ -14,6 +14,7 @@
 [ext_resource type="Texture2D" uid="uid://f85ngrt7xnpi" path="res://art/tiny-tilemap.png" id="7_3s2t6"]
 [ext_resource type="TileSet" uid="uid://bh5p0sbyandmu" path="res://art/map.tres" id="8_egd53"]
 [ext_resource type="PackedScene" uid="uid://b1scbm35iefk7" path="res://mainui.tscn" id="14_qpnrh"]
+[ext_resource type="Texture2D" uid="uid://cvdc8tim3ssk8" path="res://art/438px-Thor.png" id="15_ci5wu"]
 
 [sub_resource type="GDScript" id="GDScript_356r2"]
 script/source = "extends Node2D
@@ -142,6 +143,28 @@ func _ready() -> void:
 	GSignals.addscore.connect(addscore)
 	GSignals.startrun.connect(start)
 	GSignals.dead.connect(end)
+	if GSignals.conf.get_value(\"Settings\", \"senable\", true) == false:
+		AudioServer.set_bus_mute(AudioServer.get_bus_index(\"effects\"), true)
+	else:
+		AudioServer.set_bus_mute(AudioServer.get_bus_index(\"effects\"), false)
+	if GSignals.conf.get_value(\"Settings\", \"menable\", true) == false:
+		AudioServer.set_bus_mute(AudioServer.get_bus_index(\"music\"), true)
+	else:
+		AudioServer.set_bus_mute(AudioServer.get_bus_index(\"effects\"), false)
+	if GSignals.conf.get_value(\"Settings\", \"svol\", 1) == 1:
+		AudioServer.set_bus_volume_db(AudioServer.get_bus_index(\"effects\"), 0)
+	else:
+		var value = GSignals.conf.get_value(\"Settings\", \"svol\", 1)
+		var calc = -60 * value
+		var newvol = -60 - calc
+		AudioServer.set_bus_volume_db(AudioServer.get_bus_index(\"effects\"), newvol)
+	if GSignals.conf.get_value(\"Settings\", \"mvol\", 1) == 1:
+		AudioServer.set_bus_volume_db(AudioServer.get_bus_index(\"music\"), 0)
+	else:
+		var value = GSignals.conf.get_value(\"Settings\", \"mvol\", 1)
+		var calc = -60 * value
+		var newvol = -60 - calc
+		AudioServer.set_bus_volume_db(AudioServer.get_bus_index(\"music\"), newvol)
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float) -> void:
@@ -176,9 +199,14 @@ func get_input():
 	velocity = input_direction * speed
 
 func emit():
-	$attack.emitting = true
-	await get_tree().create_timer(1).timeout
-	$attack.emitting = false
+	if GSignals.conf.get_value(\"Settings\", \"tmode\", false) == true:
+		$tattack.emitting = true
+		await get_tree().create_timer(1).timeout
+		$tattack.emitting = false
+	else:
+		$attack.emitting = true
+		await get_tree().create_timer(1).timeout
+		$attack.emitting = false
 
 func _physics_process(_delta: float) -> void:
 	if $mainui.visible != true:
@@ -239,6 +267,16 @@ script = SubResource("GDScript_356r2")
 [node name="music" type="AudioStreamPlayer" parent="."]
 stream = SubResource("AudioStreamPlaylist_mfux6")
 autoplay = true
+bus = &"music"
+
+[node name="attacking" type="AudioStreamPlayer" parent="."]
+bus = &"effects"
+
+[node name="floating" type="AudioStreamPlayer" parent="."]
+bus = &"effects"
+
+[node name="dead" type="AudioStreamPlayer" parent="."]
+bus = &"effects"
 
 [node name="spawn" type="Timer" parent="."]
 wait_time = 2.0
@@ -280,6 +318,7 @@ offset_top = -324.0
 offset_right = 571.0
 offset_bottom = -301.0
 size_flags_horizontal = 0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
 text = "KILLS: 0"
 vertical_alignment = 1
 
@@ -288,6 +327,7 @@ offset_left = -576.0
 offset_top = -300.0
 offset_right = -372.0
 offset_bottom = -277.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
 text = "Time: 0"
 
 [node name="health" type="TextureProgressBar" parent="weapon/Camera2D"]
@@ -335,6 +375,21 @@ initial_velocity_max = 200.0
 scale_amount_min = 3.0
 scale_amount_max = 3.0
 color = Color(0.956863, 0.898039, 0.0431373, 1)
+
+[node name="tattack" type="CPUParticles2D" parent="weapon"]
+emitting = false
+amount = 128
+randomness = 1.0
+lifetime_randomness = 1.0
+local_coords = true
+draw_order = 1
+texture = ExtResource("15_ci5wu")
+direction = Vector2(1, 1)
+spread = 180.0
+gravity = Vector2(0, 0)
+initial_velocity_max = 200.0
+scale_amount_min = 3.0
+scale_amount_max = 3.0
 
 [node name="mobs" type="CanvasGroup" parent="."]
 
