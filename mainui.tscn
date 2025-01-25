@@ -105,6 +105,9 @@ func _on_stats_pressed() -> void:
 
 func _on_statclose_pressed() -> void:
 	$statswin.visible = false
+
+func _on_jam_pressed() -> void:
+	OS.shell_open(\"https://itch.io/jam/pirate\")
 "
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_t4xke"]
@@ -501,6 +504,7 @@ fit_content = true
 [connection signal="value_changed" from="swin/holder/mcon/musicvol" to="." method="_on_musicvol_value_changed"]
 [connection signal="pressed" from="swin/holder/extras/credits" to="." method="_on_credits_pressed"]
 [connection signal="pressed" from="swin/holder/extras/licenses" to="." method="_on_licenses_pressed"]
+[connection signal="pressed" from="swin/holder/extras/jam" to="." method="_on_jam_pressed"]
 [connection signal="pressed" from="swin/holder/close" to="." method="_on_close_pressed"]
 [connection signal="pressed" from="statswin/holder/statclose" to="." method="_on_statclose_pressed"]
 [connection signal="close_requested" from="creditswindow" to="." method="_on_creditswindow_close_requested"]
