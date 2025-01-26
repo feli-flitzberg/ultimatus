@@ -1,6 +1,7 @@
-[gd_scene load_steps=30 format=3 uid="uid://cyu3r8fvp7cs1"]
+[gd_scene load_steps=32 format=3 uid="uid://cyu3r8fvp7cs1"]
 
 [ext_resource type="Texture2D" uid="uid://cfq6211ij6sd5" path="res://art/diamond1.png" id="1_dhvhp"]
+[ext_resource type="Shader" path="res://art/shadow.gdshader" id="1_wrug2"]
 [ext_resource type="Texture2D" uid="uid://o5bu68j3ih7m" path="res://art/diamond2.png" id="2_rkkwt"]
 [ext_resource type="Texture2D" uid="uid://3jo74d0e1bwi" path="res://art/diamond3.png" id="3_fk7oy"]
 [ext_resource type="Texture2D" uid="uid://btp58qrl7dvtg" path="res://art/diamond4.png" id="4_bakaa"]
@@ -30,7 +31,7 @@
 [sub_resource type="GDScript" id="GDScript_oqbnr"]
 script/source = "class_name Mob4 extends CharacterBody2D
 
-@export var speed = 200
+@export var speed = 150
 @export var attack = 2048
 @export var health = 2048
 var max_health
@@ -46,11 +47,10 @@ func damage(dam, move):
 	if health <= 0:
 		attack = 0
 		var tween = create_tween()
-		tween.tween_property(self, \"modulate\", Color(0, 0, 0 ,0), 2)
 		GSignals.heal.emit(max_health)
 		GSignals.addscore.emit(4)
-		await get_tree().create_timer(2).timeout
-		self.queue_free()
+		tween.tween_property(self, \"modulate\", Color(0, 0, 0 ,0), 3.0)
+		tween.finished.connect(self.queue_free)
 
 func end():
 	self.queue_free()
@@ -61,8 +61,8 @@ func _ready() -> void:
 	GSignals.dead.connect(end)
 
 func _physics_process(_delta: float) -> void:
-	if speed < 200:
-		speed += 1
+	if speed < 150:
+		speed += 10
 	var direction := global_transform.origin.direction_to(playerpos)
 	velocity = direction * speed
 	move_and_slide()
@@ -70,6 +70,19 @@ func _physics_process(_delta: float) -> void:
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_eyw2j"]
 size = Vector2(32, 32)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_dqw1h"]
+shader = ExtResource("1_wrug2")
+shader_parameter/top = null
+shader_parameter/left = null
+shader_parameter/right = true
+shader_parameter/bottom = null
+shader_parameter/topleft = null
+shader_parameter/topright = null
+shader_parameter/bottomleft = null
+shader_parameter/bottomright = true
+shader_parameter/color = Color(0.0431373, 0.0431373, 0.0431373, 1)
+shader_parameter/inside = false
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_s4qam"]
 animations = [{
@@ -165,6 +178,7 @@ script = SubResource("GDScript_oqbnr")
 shape = SubResource("RectangleShape2D_eyw2j")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+material = SubResource("ShaderMaterial_dqw1h")
 sprite_frames = SubResource("SpriteFrames_s4qam")
 autoplay = "default"
 frame_progress = 0.934393

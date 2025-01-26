@@ -1,13 +1,14 @@
-[gd_scene load_steps=7 format=3 uid="uid://b088rguc2vlne"]
+[gd_scene load_steps=9 format=3 uid="uid://b088rguc2vlne"]
 
 [ext_resource type="Texture2D" uid="uid://bvs4510iqyn7p" path="res://art/clipped-sprite1.png" id="1_afswk"]
+[ext_resource type="Shader" path="res://art/shadow.gdshader" id="1_yx26g"]
 [ext_resource type="Texture2D" uid="uid://b3qwnxrajikc4" path="res://art/clipped-sprite2.png" id="2_gof54"]
 [ext_resource type="Texture2D" uid="uid://dln6sxj55owoh" path="res://art/clipped-sprite3.png" id="3_t2irb"]
 
 [sub_resource type="GDScript" id="GDScript_o2ch4"]
 script/source = "class_name Mob1 extends CharacterBody2D
 
-@export var speed = 200
+@export var speed = 150
 @export var attack = 256
 @export var health = 256
 var max_health
@@ -23,11 +24,10 @@ func damage(dam, move):
 	if health <= 0:
 		attack = 0
 		var tween = create_tween()
-		tween.tween_property(self, \"modulate\", Color(0, 0, 0 ,0), 2)
 		GSignals.heal.emit(max_health)
 		GSignals.addscore.emit(1)
-		await get_tree().create_timer(2).timeout
-		self.queue_free()
+		tween.tween_property(self, \"modulate\", Color(0, 0, 0 ,0), 3.0)
+		tween.finished.connect(self.queue_free)
 
 func end():
 	self.queue_free()
@@ -38,8 +38,8 @@ func _ready() -> void:
 	GSignals.dead.connect(end)
 
 func _physics_process(_delta: float) -> void:
-	if speed < 200:
-		speed += 1
+	if speed < 150:
+		speed += 10
 	var direction := global_transform.origin.direction_to(playerpos)
 	velocity = direction * speed
 	move_and_slide()
@@ -47,6 +47,19 @@ func _physics_process(_delta: float) -> void:
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_7il4i"]
 size = Vector2(14, 12)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_v656v"]
+shader = ExtResource("1_yx26g")
+shader_parameter/top = null
+shader_parameter/left = null
+shader_parameter/right = true
+shader_parameter/bottom = null
+shader_parameter/topleft = null
+shader_parameter/topright = null
+shader_parameter/bottomleft = null
+shader_parameter/bottomright = true
+shader_parameter/color = Color(0.0431373, 0.0431373, 0.0431373, 1)
+shader_parameter/inside = false
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_wkfx1"]
 animations = [{
@@ -74,6 +87,7 @@ script = SubResource("GDScript_o2ch4")
 shape = SubResource("RectangleShape2D_7il4i")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+material = SubResource("ShaderMaterial_v656v")
 sprite_frames = SubResource("SpriteFrames_wkfx1")
 autoplay = "default"
 frame_progress = 0.942883

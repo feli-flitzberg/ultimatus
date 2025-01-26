@@ -1,4 +1,4 @@
-[gd_scene load_steps=25 format=4 uid="uid://bkh4rmi7t6veg"]
+[gd_scene load_steps=31 format=4 uid="uid://bkh4rmi7t6veg"]
 
 [ext_resource type="Shader" path="res://art/attack.gdshader" id="1_8w5r1"]
 [ext_resource type="AudioStream" uid="uid://cbsu8b6rd711w" path="res://music/Burnt Spirit.ogg" id="1_f1puq"]
@@ -12,10 +12,14 @@
 [ext_resource type="AudioStream" uid="uid://d2al47202up2y" path="res://music/Truth of the Legend.ogg" id="5_55mhp"]
 [ext_resource type="AudioStream" uid="uid://dx06ietgu2msr" path="res://music/Unity.ogg" id="6_7ktpc"]
 [ext_resource type="Texture2D" uid="uid://f85ngrt7xnpi" path="res://art/tiny-tilemap.png" id="7_3s2t6"]
+[ext_resource type="AudioStream" uid="uid://2r4b7ktb2vtx" path="res://music/ambience.wav" id="7_4hltg"]
+[ext_resource type="AudioStream" uid="uid://boroyosb3cl4i" path="res://music/sonar-d.wav" id="7_sgw5f"]
 [ext_resource type="TileSet" uid="uid://bh5p0sbyandmu" path="res://art/map.tres" id="8_egd53"]
+[ext_resource type="AudioStream" uid="uid://i8i000vr82p5" path="res://music/sonar-g.wav" id="9_41r4g"]
 [ext_resource type="Texture2D" uid="uid://bdginhv2ip14y" path="res://art/tutorial.png" id="12_o0wuq"]
 [ext_resource type="PackedScene" uid="uid://b1scbm35iefk7" path="res://mainui.tscn" id="14_qpnrh"]
 [ext_resource type="Texture2D" uid="uid://cvdc8tim3ssk8" path="res://art/438px-Thor.png" id="15_ci5wu"]
+[ext_resource type="Shader" path="res://art/shadow.gdshader" id="18_p6own"]
 
 [sub_resource type="GDScript" id="GDScript_356r2"]
 script/source = "extends Node2D
@@ -63,6 +67,7 @@ func reset() -> void:
 	mult = 1.0
 	score = 0
 	$weapon/Camera2D/score.text = \"Kills: %d\" % score
+	$weapon/Camera2D/tutorial.visible = true
 
 func _on_spawn_timeout() -> void:
 	var eselect = enemies.pick_random()
@@ -120,7 +125,7 @@ func heal(amount):
 
 func addscore(val):
 	score += val
-	$weapon/Camera2D/score.text = \"Kills: %d\" % score
+	$weapon/Camera2D/score.text = \"Score: %d\" % score
 
 func start():
 	reset()
@@ -129,6 +134,7 @@ func start():
 	$wipe.start()
 	$boss.start()
 	$tutorial.start()
+	$floating.play()
 	GSignals.started.emit()
 
 func end():
@@ -137,6 +143,8 @@ func end():
 	$upgrade.stop()
 	$wipe.stop()
 	$boss.stop()
+	$floating.stop()
+	$dead.play()
 	GSignals.endrun.emit(score, time)
 
 # Called when the node enters the scene tree for the first time.
@@ -157,16 +165,12 @@ func _ready() -> void:
 		AudioServer.set_bus_volume_db(AudioServer.get_bus_index(\"effects\"), 0)
 	else:
 		var value = GSignals.conf.get_value(\"Settings\", \"svol\", 1)
-		var calc = -60 * value
-		var newvol = -60 - calc
-		AudioServer.set_bus_volume_db(AudioServer.get_bus_index(\"effects\"), newvol)
+		AudioServer.set_bus_volume_db(AudioServer.get_bus_index(\"effects\"), linear_to_db(value))
 	if GSignals.conf.get_value(\"Settings\", \"mvol\", 1) == 1:
 		AudioServer.set_bus_volume_db(AudioServer.get_bus_index(\"music\"), 0)
 	else:
 		var value = GSignals.conf.get_value(\"Settings\", \"mvol\", 1)
-		var calc = -60 * value
-		var newvol = -60 - calc
-		AudioServer.set_bus_volume_db(AudioServer.get_bus_index(\"music\"), newvol)
+		AudioServer.set_bus_volume_db(AudioServer.get_bus_index(\"music\"), linear_to_db(value))
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float) -> void:
@@ -178,7 +182,10 @@ func _process(delta: float) -> void:
 	GSignals.pos.emit($weapon.global_transform.origin)
 
 func _on_tutorial_timeout() -> void:
+	var tween = create_tween()
+	tween.tween_property($weapon/Camera2D/tutorial, \"modulate\", Color(0, 0, 0, 0), 2)
 	$weapon/Camera2D/tutorial.visible = false
+	tween.tween_property($weapon/Camera2D/tutorial, \"modulate\", Color(1, 1, 1, 1), 2)
 "
 
 [sub_resource type="AudioStreamPlaylist" id="AudioStreamPlaylist_mfux6"]
@@ -191,13 +198,17 @@ stream_3 = ExtResource("4_ne7vk")
 stream_4 = ExtResource("5_55mhp")
 stream_5 = ExtResource("6_7ktpc")
 
+[sub_resource type="AudioStreamPlaylist" id="AudioStreamPlaylist_5xvqe"]
+stream_count = 1
+stream_0 = ExtResource("7_4hltg")
+
 [sub_resource type="GDScript" id="GDScript_dgfs5"]
 script/source = "extends CharacterBody2D
 
 var speed = 500
 var health = 131072
 var attack = 16384
-var slow = 600
+var slow = 150
 
 func get_input():
 	var input_direction = Input.get_vector(\"left\", \"right\", \"up\", \"down\")
@@ -233,6 +244,7 @@ func _on_wipe_timeout() -> void:
 			pass
 		else:
 			emit()
+			$\"../attacking\".play()
 			GSignals.wipe.emit(attack, slow)
 
 func get_all_children(in_node,arr:=[]):
@@ -266,25 +278,44 @@ shader_parameter/radial_speed = 1.4
 shader_parameter/alpha = 1.0
 shader_parameter/noise = SubResource("NoiseTexture2D_dpx27")
 
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_uivqt"]
+shader = ExtResource("18_p6own")
+shader_parameter/top = null
+shader_parameter/left = false
+shader_parameter/right = true
+shader_parameter/bottom = null
+shader_parameter/topleft = null
+shader_parameter/topright = null
+shader_parameter/bottomleft = null
+shader_parameter/bottomright = true
+shader_parameter/color = Color(0.0430392, 0.0430392, 0.0430392, 1)
+shader_parameter/inside = false
+
 [node name="map" type="Node2D"]
 script = SubResource("GDScript_356r2")
 
 [node name="music" type="AudioStreamPlayer" parent="."]
 stream = SubResource("AudioStreamPlaylist_mfux6")
+volume_db = -6.0
 autoplay = true
 bus = &"music"
 
 [node name="attacking" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("7_sgw5f")
+volume_db = -3.0
 bus = &"effects"
 
 [node name="floating" type="AudioStreamPlayer" parent="."]
+stream = SubResource("AudioStreamPlaylist_5xvqe")
+volume_db = 3.0
 bus = &"effects"
 
 [node name="dead" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("9_41r4g")
+pitch_scale = 2.0
 bus = &"effects"
 
 [node name="spawn" type="Timer" parent="."]
-wait_time = 2.0
 
 [node name="upgrade" type="Timer" parent="."]
 wait_time = 6.0
@@ -324,11 +355,11 @@ script = SubResource("GDScript_dgfs5")
 [node name="score" type="Label" parent="weapon/Camera2D"]
 offset_left = -576.0
 offset_top = -324.0
-offset_right = 571.0
-offset_bottom = -301.0
+offset_right = -480.0
+offset_bottom = -304.0
 size_flags_horizontal = 0
 theme_override_colors/font_color = Color(0, 0, 0, 1)
-text = "KILLS: 0"
+text = "SCORE: 0"
 vertical_alignment = 1
 
 [node name="timer" type="Label" parent="weapon/Camera2D"]
@@ -363,6 +394,16 @@ offset_right = -331.0
 offset_bottom = -108.0
 texture = ExtResource("12_o0wuq")
 
+[node name="Label" type="Label" parent="weapon/Camera2D"]
+offset_left = 108.0
+offset_top = -324.0
+offset_right = 576.0
+offset_bottom = -264.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 48
+text = "Goal: SURVIVE"
+horizontal_alignment = 1
+
 [node name="collision" type="CollisionShape2D" parent="weapon"]
 shape = SubResource("RectangleShape2D_wl46p")
 
@@ -371,6 +412,7 @@ material = SubResource("ShaderMaterial_gww1n")
 texture = ExtResource("1_gs8ea")
 
 [node name="main" type="Sprite2D" parent="weapon"]
+material = SubResource("ShaderMaterial_uivqt")
 texture = ExtResource("1_gs8ea")
 
 [node name="mainui" parent="weapon" instance=ExtResource("14_qpnrh")]
@@ -406,7 +448,7 @@ gravity = Vector2(0, 0)
 initial_velocity_min = 200.0
 initial_velocity_max = 200.0
 scale_amount_min = 0.01
-scale_amount_max = 0.1
+scale_amount_max = 0.05
 
 [node name="mobs" type="CanvasGroup" parent="."]
 

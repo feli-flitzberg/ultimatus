@@ -1,6 +1,7 @@
-[gd_scene load_steps=16 format=3 uid="uid://1dv3ydnl50vm"]
+[gd_scene load_steps=18 format=3 uid="uid://1dv3ydnl50vm"]
 
 [ext_resource type="Texture2D" uid="uid://dq8yhlgtie0f1" path="res://art/boss1.png" id="1_krplt"]
+[ext_resource type="Shader" path="res://art/shadow.gdshader" id="1_s8l8d"]
 [ext_resource type="Texture2D" uid="uid://8rkdwof5kyfu" path="res://art/boss2.png" id="2_e62wt"]
 [ext_resource type="Texture2D" uid="uid://b4owgt3xjtvav" path="res://art/boss3.png" id="3_kx0j3"]
 [ext_resource type="Texture2D" uid="uid://d37ksw32tl66p" path="res://art/boss4.png" id="4_7kecp"]
@@ -32,11 +33,10 @@ func damage(dam, move):
 	if health <= 0:
 		attack = 0
 		var tween = create_tween()
-		tween.tween_property(self, \"modulate\", Color(0, 0, 0 ,0), 2)
 		GSignals.heal.emit(max_health)
 		GSignals.addscore.emit(8)
-		await get_tree().create_timer(2).timeout
-		self.queue_free()
+		tween.tween_property(self, \"modulate\", Color(0, 0, 0 ,0), 3.0)
+		tween.finished.connect(self.queue_free)
 
 func end():
 	self.queue_free()
@@ -48,7 +48,7 @@ func _ready() -> void:
 
 func _physics_process(_delta: float) -> void:
 	if speed < 200:
-		speed += 2
+		speed += 20
 	var direction := global_transform.origin.direction_to(playerpos)
 	velocity = direction * speed
 	move_and_slide()
@@ -56,6 +56,19 @@ func _physics_process(_delta: float) -> void:
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_4lpt5"]
 size = Vector2(64, 64)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_41fbg"]
+shader = ExtResource("1_s8l8d")
+shader_parameter/top = null
+shader_parameter/left = null
+shader_parameter/right = true
+shader_parameter/bottom = null
+shader_parameter/topleft = null
+shader_parameter/topright = null
+shader_parameter/bottomleft = null
+shader_parameter/bottomright = true
+shader_parameter/color = Color(0.0431373, 0.0431373, 0.0431373, 1)
+shader_parameter/inside = false
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_g8g7m"]
 animations = [{
@@ -109,6 +122,7 @@ script = SubResource("GDScript_241yu")
 shape = SubResource("RectangleShape2D_4lpt5")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+material = SubResource("ShaderMaterial_41fbg")
 sprite_frames = SubResource("SpriteFrames_g8g7m")
 autoplay = "default"
 frame_progress = 0.420698

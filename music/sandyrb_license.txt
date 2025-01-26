@@ -1,0 +1,58 @@
+Pack downloaded from Freesound
+----------------------------------------
+
+"Sandyrb Sonar Ping Pong"
+
+This Pack of sounds contains sounds by the following user:
+ - sandyrb ( https://freesound.org/people/sandyrb/ )
+
+You can find this pack online at: https://freesound.org/people/sandyrb/packs/6715/
+
+
+Licenses in this Pack (see below for individual sound licenses)
+---------------------------------------------------------------
+
+Attribution 4.0: https://creativecommons.org/licenses/by/4.0/
+
+
+Sounds in this Pack
+-------------------
+
+  * 105349__sandyrb__SONAR_PING_PONG_G.wav
+    * url: https://freesound.org/s/105349/
+    * license: Attribution 4.0
+  * 105348__sandyrb__SONAR_PING_PONG_G_.wav
+    * url: https://freesound.org/s/105348/
+    * license: Attribution 4.0
+  * 105347__sandyrb__SONAR_PING_PONG_F.wav
+    * url: https://freesound.org/s/105347/
+    * license: Attribution 4.0
+  * 105346__sandyrb__SONAR_PING_PONG_F_.wav
+    * url: https://freesound.org/s/105346/
+    * license: Attribution 4.0
+  * 105345__sandyrb__SONAR_PING_PONG_Eb.wav
+    * url: https://freesound.org/s/105345/
+    * license: Attribution 4.0
+  * 105344__sandyrb__SONAR_PING_PONG_E.wav
+    * url: https://freesound.org/s/105344/
+    * license: Attribution 4.0
+  * 105343__sandyrb__SONAR_PING_PONG_D.wav
+    * url: https://freesound.org/s/105343/
+    * license: Attribution 4.0
+  * 105342__sandyrb__SONAR_PING_PONG_C.wav
+    * url: https://freesound.org/s/105342/
+    * license: Attribution 4.0
+  * 105341__sandyrb__SONAR_PING_PONG_C_.wav
+    * url: https://freesound.org/s/105341/
+    * license: Attribution 4.0
+  * 105340__sandyrb__SONAR_PING_PONG_Bb.wav
+    * url: https://freesound.org/s/105340/
+    * license: Attribution 4.0
+  * 105339__sandyrb__SONAR_PING_PONG_B.wav
+    * url: https://freesound.org/s/105339/
+    * license: Attribution 4.0
+  * 105338__sandyrb__SONAR_PING_PONG_A1.wav
+    * url: https://freesound.org/s/105338/
+    * license: Attribution 4.0
+
+
