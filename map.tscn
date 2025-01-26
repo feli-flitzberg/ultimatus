@@ -136,6 +136,26 @@ func start():
 	$tutorial.start()
 	$floating.play()
 	GSignals.started.emit()
+	Input.mouse_mode = Input.MOUSE_MODE_CONFINED_HIDDEN
+
+func paused():
+	$spawn.paused = true
+	$upgrade.paused = true
+	$wipe.paused = true
+	$boss.paused = true
+	$tutorial.paused = true
+	$floating.stream_paused = true
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	GSignals.pausecalled.emit()
+
+func unpaused():
+	$spawn.paused = false
+	$upgrade.paused = false
+	$wipe.paused = false
+	$boss.paused = false
+	$tutorial.paused = false
+	$floating.stream_paused = false
+	Input.mouse_mode = Input.MOUSE_MODE_CONFINED_HIDDEN
 
 func end():
 	GSignals.scoresave(score, time)
@@ -146,6 +166,7 @@ func end():
 	$floating.stop()
 	$dead.play()
 	GSignals.endrun.emit(score, time)
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
@@ -153,6 +174,8 @@ func _ready() -> void:
 	GSignals.addscore.connect(addscore)
 	GSignals.startrun.connect(start)
 	GSignals.dead.connect(end)
+	GSignals.pause.connect(paused)
+	GSignals.unpause.connect(unpaused)
 	if GSignals.conf.get_value(\"Settings\", \"senable\", true) == false:
 		AudioServer.set_bus_mute(AudioServer.get_bus_index(\"effects\"), true)
 	else:
@@ -211,6 +234,9 @@ var attack = 16384
 var slow = 150
 
 func get_input():
+	if Input.is_action_pressed(\"start\") == true:
+		if $mainui.visible == false:
+			GSignals.pause.emit()
 	var input_direction = Input.get_vector(\"left\", \"right\", \"up\", \"down\")
 	velocity = input_direction * speed
 
@@ -344,6 +370,8 @@ texture = ExtResource("7_3s2t6")
 region_enabled = true
 region_rect = Rect2(51, 34, 16, 16)
 
+[node name="mobs" type="CanvasGroup" parent="."]
+
 [node name="weapon" type="CharacterBody2D" parent="."]
 position = Vector2(576, 324)
 disable_mode = 2
@@ -449,8 +477,6 @@ initial_velocity_min = 200.0
 initial_velocity_max = 200.0
 scale_amount_min = 0.01
 scale_amount_max = 0.05
-
-[node name="mobs" type="CanvasGroup" parent="."]
 
 [connection signal="timeout" from="spawn" to="." method="_on_spawn_timeout"]
 [connection signal="timeout" from="upgrade" to="." method="_on_upgrade_timeout"]

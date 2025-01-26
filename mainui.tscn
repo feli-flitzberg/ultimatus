@@ -9,6 +9,7 @@ func _ready() -> void:
 	$licensewindow.hide()
 	GSignals.started.connect(hideui)
 	GSignals.endrun.connect(restart)
+	GSignals.pausecalled.connect(paused)
 	$bg/box/hiscore.text = \"High Score to Beat: %d\" % GSignals.conf.get_value(\"Scores\", \"hiscore\", 0)
 
 func _on_start_pressed() -> void:
@@ -16,6 +17,7 @@ func _on_start_pressed() -> void:
 
 func hideui():
 	self.visible = false
+	$bg.visible = true
 
 func restart(score, time):
 	$bg/box/story.visible = false
@@ -26,6 +28,11 @@ func restart(score, time):
 	$bg/box/finaltime.text = \"Time: %02d:%02d\" % [minute, second]
 	$bg/box/finalscore.visible = true
 	$bg/box/finaltime.visible = true
+	self.visible = true
+
+func paused():
+	$bg.visible = false
+	_on_settings_pressed()
 	self.visible = true
 
 func _on_settings_pressed() -> void:
@@ -43,7 +50,12 @@ func _on_close_pressed() -> void:
 	var mvolpass = $swin/holder/mcon/musicvol.value
 	var tmodepass = $swin/holder/thormode.button_pressed
 	GSignals.configsave(senablepass, menablepass, svolpass, mvolpass, tmodepass)
-	$swin.visible = false
+	if $bg.visible == false:
+		GSignals.unpause.emit()
+		hideui()
+		$swin.visible = false
+	else:
+		$swin.visible = false
 
 func _on_soundtoggle_toggled(_toggled_on: bool) -> void:
 	if $swin/holder/soundtoggle.button_pressed == false:
