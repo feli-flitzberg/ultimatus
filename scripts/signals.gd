@@ -11,6 +11,9 @@ signal dead
 signal startrun
 signal started
 signal endrun(score, time)
+signal pause
+signal pausecalled
+signal unpause
 
 # reusing the autoload for stats/settings functions
 var config = ConfigFile.new()
@@ -32,6 +35,7 @@ func configure():
 		new.set_value("Settings", "tmode", false)
 		new.save("user://settings.ini")
 	return new
+
 func scoresave(score, time):
 	var tsenable = conf.get_value("Settings", "senable", true)
 	var tmenable = conf.get_value("Settings", "menable", true)

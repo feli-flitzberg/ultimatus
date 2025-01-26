@@ -12,6 +12,7 @@ script/source = "class_name Mob1 extends CharacterBody2D
 @export var attack = 256
 @export var health = 256
 var max_health
+var pause
 
 var playerpos: Vector2
 
@@ -29,6 +30,14 @@ func damage(dam, move):
 		tween.tween_property(self, \"modulate\", Color(0, 0, 0 ,0), 3.0)
 		tween.finished.connect(self.queue_free)
 
+func paused():
+	pause = true
+	speed = 0
+
+func unpaused():
+	pause = false
+	speed = 150
+
 func end():
 	self.queue_free()
 
@@ -36,10 +45,15 @@ func _ready() -> void:
 	GSignals.pos.connect(move_to_player)
 	GSignals.wipe.connect(damage)
 	GSignals.dead.connect(end)
+	GSignals.pause.connect(paused)
+	GSignals.unpause.connect(unpaused)
 
 func _physics_process(_delta: float) -> void:
 	if speed < 150:
-		speed += 10
+		if pause == true:
+			pass
+		else:
+			speed += 10
 	var direction := global_transform.origin.direction_to(playerpos)
 	velocity = direction * speed
 	move_and_slide()

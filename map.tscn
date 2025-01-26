@@ -59,7 +59,7 @@ var directions = [north, south, east, west]
 var enemies = [mob1, mob2, mob3, mob4]
 
 func reset() -> void:
-	$weapon.health = 65536
+	$weapon.health = 131072
 	$weapon/Camera2D/health.value = $weapon/Camera2D/health.max_value
 	$weapon.position = Vector2(576,324)
 	time = 0.0
