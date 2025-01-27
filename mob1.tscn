@@ -19,16 +19,22 @@ var playerpos: Vector2
 func move_to_player(ppos):
 	playerpos = ppos
 
-func damage(dam, move):
+func damage(dam):
 	health -= dam
-	speed -= move
+	speed = -600
+	$Label.visible = true
+	var tween = create_tween()
 	if health <= 0:
 		attack = 0
-		var tween = create_tween()
+		speed -= 1200
 		GSignals.heal.emit(max_health)
-		GSignals.addscore.emit(1)
-		tween.tween_property(self, \"modulate\", Color(0, 0, 0 ,0), 3.0)
+		GSignals.addscore.emit(8)
+		tween.tween_property($AnimatedSprite2D, \"modulate\", Color(0, 0, 0 ,0), 3.0)
 		tween.finished.connect(self.queue_free)
+	else:
+		tween.tween_property($AnimatedSprite2D, \"modulate\", Color(1, 0, 0, 0.5), 1.5)
+		tween.tween_property($AnimatedSprite2D, \"modulate\", Color(1, 1, 1, 1), 1.5)
+		$Label.visible = false
 
 func paused():
 	pause = true
@@ -55,8 +61,11 @@ func _physics_process(_delta: float) -> void:
 		else:
 			speed += 10
 	var direction := global_transform.origin.direction_to(playerpos)
-	velocity = direction * speed
-	move_and_slide()
+	if speed < 0:
+		pass
+	else:
+		velocity = direction * speed
+		move_and_slide()
 "
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_7il4i"]
@@ -105,3 +114,20 @@ material = SubResource("ShaderMaterial_v656v")
 sprite_frames = SubResource("SpriteFrames_wkfx1")
 autoplay = "default"
 frame_progress = 0.942883
+
+[node name="Label" type="Label" parent="."]
+visible = false
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -18.0
+offset_top = -24.0
+offset_right = 18.0
+offset_bottom = -4.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 16
+text = "eek"

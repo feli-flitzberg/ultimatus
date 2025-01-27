@@ -231,7 +231,6 @@ script/source = "extends CharacterBody2D
 var speed = 500
 var health = 131072
 var attack = 16384
-var slow = 150
 
 func get_input():
 	if Input.is_action_pressed(\"start\") == true:
@@ -271,7 +270,7 @@ func _on_wipe_timeout() -> void:
 		else:
 			emit()
 			$\"../attacking\".play()
-			GSignals.wipe.emit(attack, slow)
+			GSignals.wipe.emit(attack)
 
 func get_all_children(in_node,arr:=[]):
 	arr.push_back(in_node)
@@ -459,8 +458,10 @@ spread = 180.0
 gravity = Vector2(0, 0)
 initial_velocity_max = 200.0
 scale_amount_min = 3.0
-scale_amount_max = 3.0
-color = Color(0.956863, 0.898039, 0.0431373, 1)
+scale_amount_max = 5.0
+color = Color(0.649382, 0.608143, 0.00432407, 1)
+hue_variation_min = -1.0
+hue_variation_max = 1.0
 
 [node name="tattack" type="CPUParticles2D" parent="weapon"]
 emitting = false

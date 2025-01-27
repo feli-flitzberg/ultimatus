@@ -2,7 +2,7 @@ extends Node
 
 # player/enemy signals
 signal pos(playerpos: Vector2)
-signal wipe(wattack, wslow)
+signal wipe(wattack)
 signal heal(value)
 signal addscore(value)
 signal dead
